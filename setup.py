@@ -29,6 +29,8 @@ class Setup:
 			"iproute2",
 			# ALSA audio
 			"alsa-utils", "portaudio19-dev", "ffmpeg",
+			# libusb backend for pyusb (ReSpeaker control via xvf_host)
+			"libusb-1.0-0",
 		]
 		self._run_command("sudo apt update")
 		self.install_packages(packages)
@@ -51,8 +53,10 @@ class Setup:
 			# install_openwakeword() for why it needs its own install step.
 			"pvporcupine", "rapidfuzz", "pydub", "scipy", "openai", "elevenlabs", "piper-tts",
 			"pywifi", "flask-talisman", "requests", "pyudev", "anthropic", "smbus2",
-			# USB — pip-only, no apt equivalents
-			"pyusb",
+			# USB — pip-only, no apt equivalents. Both are imported by xvf_host.py
+			# (the repo copy and the one setup_respeaker() clones); without
+			# libusb-package, ReSpeaker control is disabled at startup.
+			"pyusb", "libusb-package",
 			# STT. sherpa-onnx bundles its own onnxruntime, so nothing else is
 			# needed here. webrtcvad and pyaudio were dropped with whisper.cpp:
 			# the streaming transducer does its own endpointing, and both the
