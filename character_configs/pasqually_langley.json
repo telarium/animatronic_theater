@@ -1,0 +1,144 @@
+{
+	"wakeword": {
+		"model": "lib/openwakeword/okay_ker_mit.onnx",
+		"description": "Okay Pasqually"
+	},
+	"piper": {
+		"directory": "lib/piper/kermit/",
+		"speed": 1.5,
+		"volume": 0.6
+	},
+	"voice_directory": "voices/kermit/",
+	"animation_directory": "animations/kermit/",
+	"html": {
+		"css_file": "webpage/assets/css/kermit.css",
+		"html_title": "It's-a me, Pasqually!"
+	},
+	"movements": [
+		{
+			"description": "Mouth",
+			"key": "x",
+			"key_mirror": null,
+			"gamepad_buttons": ["LEFT_TRIGGER", "RIGHT_TRIGGER"],
+			"midi_note": 60,
+			"program_blue_channel": 0,
+			"inverted": false,
+			"audio_sync": {
+				"open_threshold": 0.07,
+				"close_threshold": 0.06,
+				"attack_ms": 10,
+				"release_ms": 25,
+				"min_open_ms": 90,
+				"min_closed_ms": 50
+			},
+			"gpio": {
+				"pin1": { "address": "0x20", "pin": 0, "max_sec": 20 }
+			}
+		},
+		{
+			"description": "Head Turn L",
+			"key": "a",
+			"key_mirror": "d",
+			"gamepad_buttons": ["LEFT_STICK_LEFT", "DPAD_LEFT"],
+			"midi_note": 61,
+			"program_blue_channel": 1,
+			"inverted": false,
+			"gpio": {
+				"pin1": { "address": "0x20", "pin": 1, "max_sec": 20 }
+			}
+		},
+		{
+			"description": "Head Turn R",
+			"key": "d",
+			"key_mirror": "a",
+			"gamepad_buttons": ["LEFT_STICK_RIGHT", "DPAD_RIGHT"],
+			"midi_note": 62,
+			"program_blue_channel": 2,
+			"inverted": false,
+			"gpio": {
+				"pin1": { "address": "0x20", "pin": 2, "max_sec": 20 }
+			}
+		},
+		{
+			"description": "Head Tilt Up",
+			"key": "s",
+			"key_mirror": null,
+			"gamepad_buttons": ["LEFT_STICK_UP", "DPAD_UP"],
+			"midi_note": 63,
+			"program_blue_channel": 3,
+			"inverted": false,
+			"audio_sync": {
+				"open_threshold": 0.18,
+				"close_threshold": 0.12,
+				"attack_ms": 20,
+				"release_ms": 40,
+				"min_open_ms": 250,
+				"min_closed_ms": 200
+			},
+			"gpio": {
+				"pin1": { "address": "0x20", "pin": 5 },
+				"pin2": { "address": "0x20", "pin": 6 }
+			}
+		},
+		{
+			"description": "Head Tilt L",
+			"key": "q",
+			"key_mirror": "e",
+			"gamepad_buttons": ["LEFT_BUMPER"],
+			"midi_note": 64,
+			"program_blue_channel": 4,
+			"inverted": false,
+			"gpio": {
+				"pin1": { "address": "0x20", "pin": 4, "max_sec": 20 }
+			}
+		},
+		{
+			"description": "Head Tilt R",
+			"key": "e",
+			"key_mirror": "q",
+			"gamepad_buttons": ["RIGHT_BUMPER"],
+			"midi_note": 65,
+			"program_blue_channel": 5,
+			"inverted": false,
+			"gpio": {
+				"pin1": { "address": "0x20", "pin": 3, "max_sec": 20 }
+			}
+		},
+		{
+			"description": "Body Lean Up",
+			"key": "w",
+			"key_mirror": null,
+			"gamepad_buttons": ["RIGHT_STICK_UP", "BTN_NORTH"],
+			"midi_note": 66,
+			"program_blue_channel": 6,
+			"inverted": true,
+			"gpio": {
+				"pin1": { "address": "0x20", "pin": 7 }
+			}
+		},
+		{
+			"description": "Body Turn L",
+			"key": "z",
+			"key_mirror": "c",
+			"gamepad_buttons": ["RIGHT_STICK_LEFT", "BTN_WEST"],
+			"midi_note": 67,
+			"program_blue_channel": 7,
+			"inverted": false,
+			"gpio": {
+				"pin1": { "address": "0x21", "pin": 0, "max_sec": 300 }
+			}
+		},
+		{
+			"description": "Body Turn R",
+			"key": "c",
+			"key_mirror": "z",
+			"gamepad_buttons": ["RIGHT_STICK_RIGHT", "BTN_EAST"],
+			"midi_note": 68,
+			"program_blue_channel": 8,
+			"inverted": false,
+			"gpio": {
+				"pin1": { "address": "0x21", "pin": 1, "max_sec": 300 }
+			}
+		}
+	]
+}
