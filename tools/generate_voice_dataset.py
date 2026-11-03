@@ -4,7 +4,8 @@ generate_voice_dataset.py
 
 Build a Piper TTS training dataset by generating each prompt through the
 ElevenLabs voice this project already uses. The output is a directory of WAVs
-plus a metadata.csv, ready to hand to `python3 -m piper.train fit`.
+plus a metadata.csv, ready to hand to tools/train_piper_runpod.sh
+(which runs `python3 -m piper.train fit` on a GPU machine).
 
 Why generate rather than record: fine-tuning Piper needs (audio, transcript)
 pairs. Recording them means a microphone, consistent takes, and either reading
@@ -198,6 +199,47 @@ def wav_duration(path: str) -> float:
 # Generation
 # -----------------------------------------------------------------------------
 
+class ElevenLabsError(RuntimeError):
+	"""An error response from ElevenLabs, carrying its detail message.
+
+	ElevenLabs puts the actual reason in a JSON "detail" object (which
+	parameter was wrong, what it expected). requests' raise_for_status()
+	throws that away and leaves only the status line.
+	"""
+
+	def __init__(self, response: requests.Response):
+		self.status_code = response.status_code
+		self.code = ""
+		self.param = ""
+		message = response.text.strip()[:300] or response.reason
+		try:
+			detail = response.json().get("detail")
+			if isinstance(detail, dict):
+				self.code = detail.get("code") or detail.get("status") or ""
+				self.param = detail.get("param") or ""
+				message = detail.get("message") or message
+			elif isinstance(detail, list) and detail:
+				# FastAPI-style validation errors: a list of {loc, msg}
+				parts = []
+				for item in detail:
+					loc = ".".join(str(x) for x in item.get("loc", []))
+					parts.append(f"{loc}: {item.get('msg', '')}".strip(": "))
+				message = "; ".join(parts) or message
+			elif isinstance(detail, str):
+				message = detail
+		except ValueError:
+			pass
+		self.message = message
+
+		text = f"HTTP {self.status_code}"
+		if self.code:
+			text += f" [{self.code}]"
+		if self.param:
+			text += f" (param: {self.param})"
+		text += f": {message}"
+		super().__init__(text)
+
+
 def synthesize(text: str, conf: dict, retries: int = 4) -> bytes:
 	"""One ElevenLabs call, returning raw little-endian 16-bit PCM."""
 	model = "eleven_multilingual_v2" if conf["high_quality"] else "eleven_turbo_v2_5"
@@ -228,8 +270,14 @@ def synthesize(text: str, conf: dict, retries: int = 4) -> bytes:
 					time.sleep(delay)
 					delay *= 2
 					continue
-			r.raise_for_status()
+			if not r.ok:
+				# Any other error is our request's fault and won't fix itself
+				# on retry. Surface ElevenLabs' own explanation rather than a
+				# bare "400 Bad Request".
+				raise ElevenLabsError(r)
 			return r.content
+		except ElevenLabsError:
+			raise
 		except requests.RequestException as e:
 			if attempt < retries - 1:
 				print(f"    {e}, retrying in {delay:.0f}s...")
@@ -375,6 +423,18 @@ def main() -> None:
 			elif dur > MAX_CLIP_S:
 				flag = "  <-- very long"
 			print(f"    {dur:.1f}s -> {name}{flag}")
+		except ElevenLabsError as e:
+			print(f"    FAILED: {e}")
+			failed.append(text)
+			if e.status_code in (400, 401, 402, 403, 404, 422):
+				# Bad key, voice, setting or quota: every remaining prompt
+				# would fail the same way, so stop instead of repeating it.
+				print("\n  This error isn't specific to one prompt, so stopping here.")
+				print(f"  Config used: {conf['path']}")
+				print(f"  Voice ID:    {conf['voice_id']!r}")
+				print(f"  Model:       {model}  output_format={OUTPUT_FORMAT}")
+				print("  Fix the setting above and re-run; finished clips are kept.")
+				break
 		except Exception as e:
 			print(f"    FAILED: {e}")
 			failed.append(text)
@@ -393,14 +453,11 @@ def main() -> None:
 
 	report(args.out, prompts)
 	print(f"\nDataset: {args.out}")
-	print("Train with:")
-	print(f"  python3 -m piper.train fit \\")
-	print(f"    --data.voice_name kermit \\")
-	print(f"    --data.csv_path {os.path.join(args.out, 'metadata.csv')} \\")
-	print(f"    --data.audio_dir {wav_dir} \\")
-	print(f"    --model.sample_rate {SAMPLE_RATE} \\")
-	print(f"    --data.espeak_voice en-us \\")
-	print(f"    --ckpt_path /path/to/en_US-lessac-medium.ckpt")
+	print("Train on a rented NVIDIA GPU (e.g. RunPod) with:")
+	print("  bash train_piper_runpod.sh setup")
+	print("  bash train_piper_runpod.sh train <voice_name> /workspace/voice_dataset")
+	print("  bash train_piper_runpod.sh export <voice_name>")
+	print("See the header of tools/train_piper_runpod.sh for details.")
 
 
 if __name__ == "__main__":
