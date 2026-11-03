@@ -253,6 +253,13 @@ lib/pl2303/src/modules.order
 !lib/piper/kermit/
 !lib/piper/kermit/*.onnx
 !lib/piper/kermit/*.onnx.json
+!lib/piper/pasqually/
+!lib/piper/pasqually/*.onnx
+!lib/piper/pasqually/*.onnx.json
+
+# Generated Piper training clips (tools/generate_voice_dataset.py). Paid for,
+# but regenerable and far too big for git — back it up somewhere else.
+voice_dataset/
 
 config.cfg
 shows/
