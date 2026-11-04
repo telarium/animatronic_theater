@@ -243,9 +243,10 @@ lib/pl2303/src/*.mod.o
 lib/pl2303/src/Module.symvers
 lib/pl2303/src/modules.order
 
-# f_midi kernel module (pre-built binary, no source)
-!lib/f_midi/
-!lib/f_midi/usb_f_midi.ko
+# f_midi kernel module — setup.py builds it for the running kernel and keeps
+# a local copy here. A module only loads on the kernel it was built for, so
+# it is never committed.
+lib/f_midi/
 
 # Offline Piper TTS voice — fallback for when ElevenLabs is unavailable.
 # One negation per directory level, since git checks each level in turn.
